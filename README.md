@@ -1,4 +1,3 @@
-````markdown
 # Pulse Check API
 
 A Dead Man’s Switch backend service that monitors remote devices by tracking periodic heartbeat signals.  

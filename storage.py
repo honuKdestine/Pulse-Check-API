@@ -6,4 +6,5 @@ from typing import Any
 # In-memory storage for this coding challenge.
 monitors: dict[str, dict[str, Any]] = {}
 monitor_tasks: dict[str, asyncio.Task] = {}
+# Global async lock to keep monitor state updates thread-safe.
 store_lock = asyncio.Lock()

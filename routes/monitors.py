@@ -12,6 +12,7 @@ router = APIRouter(prefix="", tags=["monitors"])
 
 
 def _remaining_seconds(expires_at: str | None) -> int | None:
+    # Convert expiry timestamp into a live countdown value for responses.
     if not expires_at:
         return None
 
@@ -21,6 +22,7 @@ def _remaining_seconds(expires_at: str | None) -> int | None:
 
 
 def _monitor_view(monitor_data: dict) -> MonitorView:
+    # Build the API response model from internal monitor state.
     return MonitorView(
         id=monitor_data["id"],
         timeout=monitor_data["timeout"],
@@ -37,6 +39,7 @@ def _monitor_view(monitor_data: dict) -> MonitorView:
 @router.post("/monitors", status_code=201)
 async def register_monitor(monitor: MonitorCreate):
     async with store_lock:
+        # Prevent duplicate monitor IDs.
         if monitor.id in monitors:
             raise HTTPException(status_code=400, detail="Monitor already exists")
 
@@ -53,6 +56,7 @@ async def register_monitor(monitor: MonitorCreate):
         }
 
         monitors[monitor.id] = monitor_state
+        # Start countdown immediately after registration.
         start_timer(monitor.id, monitor.timeout)
 
         return {
@@ -64,6 +68,7 @@ async def register_monitor(monitor: MonitorCreate):
 @router.post("/monitors/{monitor_id}/heartbeat")
 async def heartbeat(monitor_id: str):
     async with store_lock:
+        # Heartbeat extends monitor lifetime and keeps it alive.
         monitor = monitors.get(monitor_id)
         if not monitor:
             raise HTTPException(status_code=404, detail="Monitor not found")
@@ -80,6 +85,7 @@ async def heartbeat(monitor_id: str):
         monitor["updated_at"] = now
         monitor["last_heartbeat"] = now
         monitor["expires_at"] = expiry_iso(monitor["timeout"])
+        # Reset timer so timeout counts from this heartbeat.
         start_timer(monitor_id, monitor["timeout"])
 
         return {
@@ -95,6 +101,7 @@ async def heartbeat(monitor_id: str):
 @router.post("/monitors/{monitor_id}/pause")
 async def pause_monitor(monitor_id: str):
     async with store_lock:
+        # Pausing suspends timeout tracking without deleting monitor data.
         monitor = monitors.get(monitor_id)
         if not monitor:
             raise HTTPException(status_code=404, detail="Monitor not found")
@@ -105,6 +112,7 @@ async def pause_monitor(monitor_id: str):
         monitor["status"] = "paused"
         monitor["updated_at"] = utc_iso()
         monitor["expires_at"] = None
+        # Pause means no active countdown task.
         stop_timer(monitor_id)
 
         return {
@@ -116,6 +124,7 @@ async def pause_monitor(monitor_id: str):
 @router.get("/monitors/{monitor_id}", response_model=MonitorView)
 async def get_monitor(monitor_id: str):
     async with store_lock:
+        # Read-only endpoint to inspect current monitor status.
         monitor = monitors.get(monitor_id)
         if not monitor:
             raise HTTPException(status_code=404, detail="Monitor not found")

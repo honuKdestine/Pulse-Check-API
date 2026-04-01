@@ -15,4 +15,8 @@ app.include_router(monitor_router)
 @app.get("/")
 def root():
     # Simple health check endpoint for quick uptime verification.
-    return {"message": "Pulse Check API is running"}
+    return {
+        "service": "Pulse Check API",
+        "status": "running",
+        "docs": "/docs"
+    }

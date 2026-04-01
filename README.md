@@ -163,7 +163,6 @@ If a timer expires with no heartbeat, the service logs:
 ```
 
 The monitor state is set to `down`.
-If `pyttsx3` is installed, the service also plays a local spoken alert.
 
 ## 4. Developer's Choice Feature
 

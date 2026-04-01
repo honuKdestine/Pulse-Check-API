@@ -42,6 +42,11 @@ sequenceDiagram
 
 - Python 3.10+
 
+### Change into the project directory (if needed)
+```bash
+cd Pulse-Check-API
+```
+
 ### Install dependencies
 
 ```bash

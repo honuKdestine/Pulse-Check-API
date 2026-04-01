@@ -1,6 +1,6 @@
 # Pulse-Check-API (Watchdog Sentinel)
 
-A Dead Man’s Switch backend service that monitors remote devices by tracking periodic heartbeat signals.
+A Dead Man's Switch backend service that monitors remote devices by tracking periodic heartbeat signals.
 If a device stops sending heartbeats within a configured timeout window, the system automatically triggers an alert, allowing operations teams to respond immediately to potential outages or failures.
 
 ## 1. Architecture Diagram
@@ -163,18 +163,20 @@ If a timer expires with no heartbeat, the service logs:
 ```
 
 The monitor state is set to `down`.
+If `pyttsx3` is installed, the service also plays a local spoken alert.
 
 ## 4. Developer's Choice Feature
 
-Feature implemented: `GET /monitors/{id}` live status endpoint.
+Feature implemented: `GET /monitors/{id}` monitor status endpoint.
 
 Why it helps:
 
 - Gives support teams immediate visibility into `alive`, `paused`, or `down` state.
-- Exposes `remaining_seconds` so teams can quickly see how close a device is to alerting.
+- Exposes `remaining_seconds` so teams can see how close a device is to alerting.
 - Improves debuggability without requiring direct access to server logs.
 
 ## 5. Notes
 
 - Storage is in-memory for challenge simplicity, so data resets when the process restarts.
 - Timers are managed with async tasks and safely replaced on heartbeat reset.
+
